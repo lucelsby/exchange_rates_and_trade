@@ -20,7 +20,8 @@ pacman::p_load(dplyr,
                lubridate,
                rdbnomics,
                data.table,
-               stringr)
+               stringr,
+               fredr)
 
 
 # clear environment
@@ -123,12 +124,12 @@ oecd_industrial_production_clean <- oecd_industrial_production_raw %>%
 
 
 
-## Upload oil production data from input files ---------------------------------
+## Upload oil market data from input files -------------------------------------
 # two bits of oil-related data are collected from the US Energy Information Administration website
 # global oil production and US oil price
 # these have both been downloaded and stored in the input_data file
 
-# upload from raw csv file
+# upload oil production data from raw csv file
 eia_oil_production_raw <- as.data.frame(t(janitor::clean_names(read.csv("input_data/20221126_eia_oil_production.csv", skip = 1)))) %>%
   
   # remove the first column
@@ -169,5 +170,73 @@ eia_oil_production_clean <- as.data.frame(cbind(period, oil_prod))
 # convert character to date format
 eia_oil_production_clean$period <- as.Date(eia_oil_production_clean$period)
 
+
+# upload oil price data from raw excel file
+eia_oil_price_clean <- janitor::clean_names(readxl::read_excel("input_data/20221126_eia_oil_price.xls", 
+                                                               sheet = "Data 1", skip = 2))
+
+# clean column names
+colnames(eia_oil_price_clean) <- c('period', 'oil_price')
+
+
+# set dates to the first day of the month
+eia_oil_price_clean <- eia_oil_price_clean %>%
   
+  dplyr::mutate(period = paste0(substr(period, 1, 7), "-01"))
+
+# convert to date variable
+eia_oil_price_clean$period <- as.Date(eia_oil_price_clean$period)
+
+
+## Download data from FRED -----------------------------------------------------
+# We need two series that can be downloaded from FRED
+# UK economic policy uncertainty
+# US CPI inflationto deflate the oil price
+
+# set FRED API key for current R session
+fredr_set_key("6180003aeadbfbb097bf2b324b98540a")
+
+
+# retrieve UK economic policy uncertainty index between selected dates
+fred_epu_clean <- fredr(
+  series_id = "UKEPUINDXM",
+  observation_start = as.Date("1990-01-01"),
+  observation_end = as.Date("2022-10-01")
+  ) %>%
+  
+  # clean
+  dplyr::select(date, value) %>%
+  
+  dplyr::rename(period = date,
+                epu = value)
+
+
+# retrieve US CPI data between selected dates
+fred_cpi_clean <- fredr(
+  series_id = "CPIAUCSL",
+  observation_start = as.Date("1990-01-01"),
+  observation_end = as.Date("2022-10-01")
+) %>%
+  
+  # clean
+  dplyr::select(date, value) %>%
+  
+  dplyr::rename(period = date,
+                cpi_index = value)  
+
+
+## Merge data into single data frame -------------------------------------------
+
+# define list of all relevant data frames to merge
+mylist <- list(eia_oil_price_clean, eia_oil_production_clean, 
+               ons_data_clean, oecd_industrial_production_clean,
+               fred_cpi_clean, fred_epu_clean)
+
+# merge together
+data_model1 <- Reduce(function(...) merge(..., by="period", all=TRUE), mylist)
+
+
+# store in clean data folder with time stamp
+data_model1 %>%
+  write_csv(., file = paste0("clean_data/", format(Sys.time(), "%Y%m%d_%H%M%S_"), "data_model1.csv"))
 
