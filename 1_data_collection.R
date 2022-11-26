@@ -59,7 +59,7 @@ mret_ids <- c(
 # define a list of variable names to correspond to each series (must be in order)
 mret_names <- c(
   ## goods and services data
-  "gs_impo",
+  "gs_imp",
   "gs_exp",
   "gs_imp_cvm",
   "gs_exp_cvm",
@@ -165,10 +165,13 @@ period <- extract_date(rownames(eia_oil_production_raw))
 oil_prod <- eia_oil_production_raw$V2
 
 # combine into clean data frame
-eia_oil_production_clean <- as.data.frame(cbind(period, oil_prod))
+eia_oil_production_clean <- as.data.frame(cbind(period, as.numeric(oil_prod)))
 
 # convert character to date format
 eia_oil_production_clean$period <- as.Date(eia_oil_production_clean$period)
+
+# clean names
+colnames(eia_oil_production_clean) <- c("period", "oil_prod")
 
 
 # upload oil price data from raw excel file
@@ -233,8 +236,38 @@ mylist <- list(eia_oil_price_clean, eia_oil_production_clean,
                fred_cpi_clean, fred_epu_clean)
 
 # merge together
-data_model1 <- Reduce(function(...) merge(..., by="period", all=TRUE), mylist)
+data_model1 <- Reduce(function(...) merge(..., by="period", all=TRUE), mylist) %>% 
+  dplyr::arrange(period)
 
+
+
+
+## Data cleaning ---------------------------------------------------------------
+
+data_model1 <- data_model1 %>%
+  
+  # make sure all variables are numeric
+  mutate_if(is.character,as.numeric) %>%
+  
+  # deflate oil price by the US CPI index
+  dplyr::mutate(oil_price_real = oil_price/(cpi_index/100)) %>%
+  
+  # generate implied deflators for ONS series 
+  dplyr::mutate(gs_imp_def = (gs_imp/gs_imp_cvm)*100,
+                gs_exp_def = (gs_exp/gs_exp_cvm)*100,
+                g_imp_def = (g_imp/g_imp_cvm)*100,
+                g_exp_def = (g_exp/g_exp_cvm)*100) %>%
+  
+  # calculate year on year growth rates for all numeric variables
+  mutate(across(where(is.numeric), 
+                funs(chg = ((.-lag(., n = 12))/lag(., n = 12))*100), 
+                .names = "{col}_y_y")) %>%
+  
+  # calculate period on period growth rates for all numeric variables
+  mutate(across(where(is.numeric), 
+                funs(chg = ((.-lag(.))/lag(.))*100), 
+                .names = "{col}_m_m"))
+  
 
 # store in clean data folder with time stamp
 data_model1 %>%
