@@ -72,41 +72,44 @@ plot_series <- function(data,
 
 ## Plot ONS trade data ---------------------------------------------------------
 
+start_date <- "1998-01-01"
+end_date <- "2022-01-01"
+
 # Create plots for exports and imports: value, CVM and price
 p1 <- plot_series(data = data,
                   variable = "gs_exp",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Exports")
 
 p2 <- plot_series(data = data,
                   variable = "gs_exp_cvm",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Real exports")
 
 p3 <- plot_series(data = data,
                   variable = "gs_exp_def_y_y",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Exports implied year-on-year deflator growth") + geom_hline(yintercept=0)
 
 p4 <- plot_series(data = data,
                   variable = "gs_imp",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Imports")
 
 p5 <- plot_series(data = data,
                   variable = "gs_imp_cvm",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Real imports")
 
 p6 <- plot_series(data = data,
                   variable = "gs_imp_def_y_y",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Imports implied year-on-year deflator growth") + geom_hline(yintercept=0)
 
 
@@ -123,40 +126,42 @@ grid.arrange(p2, p5, p3, p6, ncol = 2,
 # effective exchange rate
 p1 <- plot_series(data = data,
                   variable = "eer",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Sterling effective exchange eate")
 
 
 # growth rate of crude oil production
 p2 <- plot_series(data = data,
                   variable = "oil_prod_y_y",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Growth rate of global oil production")
 
 
 # growth rate of OECD members industrial production
 p3 <- plot_series(data = data,
                   variable = "ind_prod_y_y",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Growth rate of OECD member industrial production")
 
 
 # crude oil price
 p4 <- plot_series(data = data,
                   variable = "oil_price_real",
-                  start_date = "1998-01-01",
-                  end_date = "2022-01-01",
+                  start_date = start_date,
+                  end_date = end_date,
                   fig_title = "Price of crude oil")
 
 
 # plot other variables
 grid.arrange(p1, p2, p3, p4, ncol = 2,
              top = text_grob("Other Explanatory Variables", size = 11, face = "bold"),
-             bottom = text_grob("Source: ONS, St. Louis Fed, OECD and US Energy Information Administration", 
+             bottom = text_grob("Source: ONS, St. Louis Fed, OECD and US Energy Information Administration (EIA)", 
                                 size = 11, face = "italic", hjust = 1))
 
+
+## Stationarity Tests ----------------------------------------------------------
 
 
