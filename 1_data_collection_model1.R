@@ -5,7 +5,7 @@
 
 
 
-## Setup Environment ----------------------------------------------------------
+## Setup Environment -----------------------------------------------------------
 
 
 # load pacman for package management
@@ -51,7 +51,10 @@ mret_ids <- c(
   "BOKH", # UK imports of just goods from the world - value measure
   "BOKG", # UK exports of just goods to the world - value measure
   "BQKO", # UK imports of just goods from the world - chain volume measure
-  "BQKQ" # UK exports of just goods to the world - chain volume measure
+  "BQKQ", # UK exports of just goods to the world - chain volume measure
+  
+  ## effective exchange rate
+  "BK67"
 
   )
 
@@ -64,11 +67,14 @@ mret_names <- c(
   "gs_imp_cvm",
   "gs_exp_cvm",
   
-  # purely goods data
+  ## purely goods data
   "g_imp",
   "g_exp",
   "g_imp_cvm",
-  "g_exp_cvm"
+  "g_exp_cvm",
+  
+  ## effective exchange rate
+  "eer"
 
   )
 
@@ -272,4 +278,8 @@ data_model1 <- data_model1 %>%
 # store in clean data folder with time stamp
 data_model1 %>%
   write_csv(., file = paste0("clean_data/", format(Sys.time(), "%Y%m%d_%H%M%S_"), "data_model1.csv"))
+
+
+
+
 
