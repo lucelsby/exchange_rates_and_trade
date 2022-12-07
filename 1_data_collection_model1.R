@@ -272,7 +272,10 @@ data_model1 <- data_model1 %>%
   # calculate period on period growth rates for all numeric variables
   mutate(across(where(is.numeric), 
                 funs(chg = ((.-lag(.))/lag(.))*100), 
-                .names = "{col}_m_m"))
+                .names = "{col}_m_m")) %>%
+  
+  # remove all the columns where both the year and the monthly growth rates were calculated
+  dplyr::select(-contains("_y_y_m_m"))
   
 
 # store in clean data folder with time stamp

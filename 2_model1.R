@@ -23,7 +23,8 @@ pacman::p_load(dplyr,
                ggplot2,
                ggpubr,
                xts,
-               tseries)
+               tseries,
+               fpp)
 
 
 # clear environment
@@ -33,7 +34,7 @@ options(scipen = 999)
 
 
 # read in data
-data <- read.csv("clean_data/20221127_173559_data_model1.csv")
+data <- read.csv("clean_data/20221207_221150_data_model1.csv")
 
 
 
@@ -166,41 +167,49 @@ grid.arrange(p1, p2, p3, p4, ncol = 2,
 
 ## Stationary Tests ------------------------------------------------------------
 
+# remove NA's from the dataset
+df <- data %>% drop_na()
 
-multi_stat_tests<- function(df){
+# set critical value for rejection of the NULL hypothesis of non-stationary
+critical_value <- 0.05
+
+# define empty vector to hold results of stationary tests for all variables
+stationary_results_table <- NULL
+
+
+# for all variables except the date variable, calculate the ADF test p-value
+for (i in c(2:ncol(df))) {
   
-  # drop nas
-  df <- df %>% drop_na() %>% dplyr::select(-period)
+  # extract each time series
+  x <- df[,i]
   
-  # convert data frame into a time series object
-  df <- xts(df[,-1], order.by=as.Date(df[,1]))
+  # collect variable name
+  variable_name <- names(df[i])
   
-  # collect number of columns
-  p <- ncol(df)
+  # calculate ADF test p-value
+  p_value <- adf.test(x)$p.value
   
-  # for all variables collect the Box test, ADF test an KPSS test p values
-  df_multi <- data.frame(var=names(df),
-                         box.pvalue=sapply(df, function(v) Box.test(ts(v),lag=20,type="Ljung-Box")$p.value),
-                         adf.pvalue=sapply(df, function(v) adf.test(ts(v),alternative = "stationary")$p.value),
-                         kpss.pvalue=sapply(df, function(v) kpss.test(ts(v))$p.value)
-  )
+  # set stationary equal to TRUE when the null hypothesis is rejected (i.e., variable is stationary)
+  stationary = p_value < critical_value
   
-  # report true in data frame if they pass the test
-  df_multi$box <- df_multi$box.pvalue < 0.05
-  df_multi$adf <- df_multi$adf.pvalue < 0.05
-  df_multi$kpss <- df_multi$kpss.pvalue > 0.05
+  # collect variable name, p-value and stationary classification result
+  results <- cbind(variable_name, p_value, stationary)
   
-  
-  # print data frame
-  print(df_multi)
-  
-  # return data frame
-  print(df_multi)
+  # bind onto results table
+  stationary_results_table <- as.data.frame(rbind(stationary_results_table, results))
   
 }
 
 
-test_results <- multi_stat_tests(data)
+
+
+
+
+
+
+
+
+
 
 
 
