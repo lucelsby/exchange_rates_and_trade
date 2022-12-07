@@ -21,7 +21,9 @@ pacman::p_load(dplyr,
                data.table,
                gridExtra,
                ggplot2,
-               ggpubr)
+               ggpubr,
+               xts,
+               tseries)
 
 
 # clear environment
@@ -162,6 +164,46 @@ grid.arrange(p1, p2, p3, p4, ncol = 2,
                                 size = 11, face = "italic", hjust = 1))
 
 
-## Stationarity Tests ----------------------------------------------------------
+## Stationary Tests ------------------------------------------------------------
+
+
+multi_stat_tests<- function(df){
+  
+  # drop nas
+  df <- df %>% drop_na() %>% dplyr::select(-period)
+  
+  # convert data frame into a time series object
+  df <- xts(df[,-1], order.by=as.Date(df[,1]))
+  
+  # collect number of columns
+  p <- ncol(df)
+  
+  # for all variables collect the Box test, ADF test an KPSS test p values
+  df_multi <- data.frame(var=names(df),
+                         box.pvalue=sapply(df, function(v) Box.test(ts(v),lag=20,type="Ljung-Box")$p.value),
+                         adf.pvalue=sapply(df, function(v) adf.test(ts(v),alternative = "stationary")$p.value),
+                         kpss.pvalue=sapply(df, function(v) kpss.test(ts(v))$p.value)
+  )
+  
+  # report true in data frame if they pass the test
+  df_multi$box <- df_multi$box.pvalue < 0.05
+  df_multi$adf <- df_multi$adf.pvalue < 0.05
+  df_multi$kpss <- df_multi$kpss.pvalue > 0.05
+  
+  
+  # print data frame
+  print(df_multi)
+  
+  # return data frame
+  print(df_multi)
+  
+}
+
+
+test_results <- multi_stat_tests(data)
+
+
+
+
 
 
