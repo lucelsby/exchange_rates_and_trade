@@ -54,7 +54,29 @@ mret_ids <- c(
   "BQKQ", # UK exports of just goods to the world - chain volume measure
   
   ## effective exchange rate
-  "BK67"
+  "BK67",
+  
+  ## Trade in Goods by Sector Data - volume measures
+  "JIM5",
+  "JIM4",
+  "ODUM",
+  "OGSH",
+  "OEBB",
+  "OGSM",
+  "OEDZ",
+  "OGSP",
+  "BOXC",
+  "BPIC",
+  "OEEX",
+  "OGSU",
+  "ENDW",
+  "ENGQ",
+  "OEPR",
+  "OGSZ",
+  "OGRN",
+  "OGTG",
+  "OGSE",
+  "OGTM"
 
   )
 
@@ -74,7 +96,29 @@ mret_names <- c(
   "g_exp_cvm",
   
   ## effective exchange rate
-  "eer"
+  "eer",
+  
+  ## Trade in Goods by Sector Data - volume measures
+  "exp_excl_pm",
+  "imp_excl_pm",
+  "exp_sitc_0",
+  "imp_sitc_0",
+  "exp_sitc_1",
+  "imp_sitc_1",
+  "exp_sitc_2",
+  "imp_sitc_2",
+  "exp_sitc_3",
+  "imp_sitc_3",
+  "exp_sitc_4",
+  "imp_sitc_4",
+  "exp_sitc_5",
+  "imp_sitc_5",
+  "exp_sitc_6",
+  "imp_sitc_6",
+  "exp_sitc_7",
+  "imp_sitc_7",
+  "exp_sitc_8",
+  "imp_sitc_8"
 
   )
 
