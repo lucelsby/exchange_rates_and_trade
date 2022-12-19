@@ -326,6 +326,9 @@ data_model1 <- data_model1 %>%
 data_model1 %>%
   write_csv(., file = paste0("clean_data/", format(Sys.time(), "%Y%m%d_%H%M%S_"), "data_model1.csv"))
 
+# store in clean data folder without time stamp so it can always be used as the latest data
+data_model1 %>%
+  write_csv(., file = paste0("clean_data/", "data_model1.csv"))
 
 
 

@@ -34,7 +34,7 @@ options(scipen = 999)
 
 
 # read in data
-data <- read.csv("clean_data/20221207_221150_data_model1.csv")
+data <- read.csv("clean_data/data_model1.csv")
 
 
 
