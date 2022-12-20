@@ -126,12 +126,12 @@ grid.arrange(p2, p5, p3, p6, ncol = 2,
 
 ## Plot other variables to be included in the model ----------------------------
 
-# effective exchange rate
+# real effective exchange rate
 p1 <- plot_series(data = data,
-                  variable = "eer",
+                  variable = "real_eer",
                   start_date = start_date,
                   end_date = end_date,
-                  fig_title = "Sterling effective exchange eate")
+                  fig_title = "Real Sterling effective exchange eate")
 
 
 # growth rate of crude oil production
@@ -201,7 +201,10 @@ for (i in c(2:ncol(df))) {
 }
 
 
+## 2-Variable System -----------------------------------------------------------
 
+# we start with a simple two-variable system which includes the foreign exchange rate
+# and export growth 
 
 
 

@@ -278,12 +278,27 @@ fred_cpi_clean <- fredr(
                 cpi_index = value)  
 
 
+# retrieve UK real effective exchange rate between selected dates
+# this comes from FRED but is taken from the Bank of International Settlements
+fred_real_eer_clean <- fredr(
+  series_id = "RBGBBIS",
+  observation_start = as.Date("1995-01-01"),
+  observation_end = as.Date("2022-10-01")
+) %>%
+  
+  # clean
+  dplyr::select(date, value) %>%
+  
+  dplyr::rename(period = date,
+                real_eer = value)
+
+
 ## Merge data into single data frame -------------------------------------------
 
 # define list of all relevant data frames to merge
 mylist <- list(eia_oil_price_clean, eia_oil_production_clean, 
                ons_data_clean, oecd_industrial_production_clean,
-               fred_cpi_clean, fred_epu_clean)
+               fred_cpi_clean, fred_epu_clean, fred_real_eer_clean)
 
 # merge together
 data_model1 <- Reduce(function(...) merge(..., by="period", all=TRUE), mylist) %>% 
