@@ -29,7 +29,10 @@ pacman::p_load(dplyr,
                mFilter,
                TSstudio,
                forecast,
-               tsbox)
+               tsbox,
+               rdbnomics,
+               stringr,
+               fredr)
 
 
 # clear environment

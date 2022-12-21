@@ -29,7 +29,10 @@ pacman::p_load(dplyr,
                mFilter,
                TSstudio,
                forecast,
-               tsbox)
+               tsbox,
+               rdbnomics,
+               stringr,
+               fredr)
 
 
 # clear environment
@@ -349,9 +352,13 @@ data <- data %>%
   dplyr::select(-contains("_y_y_m_m"))
   
 
+
+## Store Data in Files ---------------------------------------------------------
+
 # store in clean data folder with time stamp
 data %>%
   write_csv(., file = paste0("clean_data/", format(Sys.time(), "%Y%m%d_%H%M%S_"), "data.csv"))
+
 
 # store in clean data folder without time stamp so it can always be used as the latest data
 data %>%
