@@ -18,16 +18,28 @@ pacman::p_load(dplyr,
                janitor,
                readxl,
                lubridate,
-               rdbnomics,
                data.table,
-               stringr,
-               fredr)
+               gridExtra,
+               ggplot2,
+               ggpubr,
+               xts,
+               tseries,
+               fpp,
+               vars,
+               mFilter,
+               TSstudio,
+               forecast,
+               tsbox)
 
 
 # clear environment
 rm(list = ls())
 graphics.off()
 options(scipen = 999)
+
+
+# source the functions R script to load pre-defined functions
+source("0_functions.R")
 
 
 ## Download ONS Data -----------------------------------------------------------
@@ -301,7 +313,7 @@ mylist <- list(eia_oil_price_clean, eia_oil_production_clean,
                fred_cpi_clean, fred_epu_clean, fred_real_eer_clean)
 
 # merge together
-data_model1 <- Reduce(function(...) merge(..., by="period", all=TRUE), mylist) %>% 
+data <- Reduce(function(...) merge(..., by="period", all=TRUE), mylist) %>% 
   dplyr::arrange(period)
 
 
@@ -309,7 +321,7 @@ data_model1 <- Reduce(function(...) merge(..., by="period", all=TRUE), mylist) %
 
 ## Data cleaning ---------------------------------------------------------------
 
-data_model1 <- data_model1 %>%
+data <- data %>%
   
   # make sure all variables are numeric
   mutate_if(is.character,as.numeric) %>%
@@ -338,12 +350,12 @@ data_model1 <- data_model1 %>%
   
 
 # store in clean data folder with time stamp
-data_model1 %>%
-  write_csv(., file = paste0("clean_data/", format(Sys.time(), "%Y%m%d_%H%M%S_"), "data_model1.csv"))
+data %>%
+  write_csv(., file = paste0("clean_data/", format(Sys.time(), "%Y%m%d_%H%M%S_"), "data.csv"))
 
 # store in clean data folder without time stamp so it can always be used as the latest data
-data_model1 %>%
-  write_csv(., file = paste0("clean_data/", "data_model1.csv"))
+data %>%
+  write_csv(., file = paste0("clean_data/", "data.csv"))
 
 
 
