@@ -40,22 +40,37 @@ plot_series <- function(data,
 
 
 
-## Define function to plot Impulse Response Functions (IRF) --------------------
-
-plot_irf <- function(imp,
-                     title){
+## Define a function to plot Impulse Response Functions (to be used later) -----
+plot_irfs <- function(imp, # estimated impulse response function of VAR
+                      
+                      j, # impulse variable
+                      
+                      k, # response variable
+                      
+                      variable_names # vector of variable names for plots
+                      
+                      ) {
   
-  # collect central, upper and lower confidence estimates
-  central <- imp$irf[[1]]
-  lower <- imp$Lower[[1]]
-  upper <- imp$Upper[[1]]
+  # collect estimates of IRF responses from impulse as data frames
+  central_responses <- as.data.frame(imp$irf[[j]])
+  lower_responses <- as.data.frame(imp$Lower[[j]])
+  upper_responses <- as.data.frame(imp$Upper[[j]])
+  
+  
+  # collect response of select response variable
+  central <- central_responses[,k]
+  lower <- lower_responses[,k]
+  upper <- upper_responses[,k]
+  
   
   # collect period as a numeric variable
   period <- as.numeric(0:(length(central)-1))
   
-  # combine into dataframe
+  
+  # combine into data frame
   imp_df <- as.data.frame(cbind(period, central, lower, upper))
   colnames(imp_df) <- c("period", "central", "upper", "lower")
+  
   
   # plot
   imp_df %>%
@@ -64,11 +79,11 @@ plot_irf <- function(imp,
     geom_ribbon(fill="grey", alpha=.2, color="grey50", linetype="dashed") +
     geom_line() +
     theme_light() +
-    labs(title = title)+
-    ylab("")+
-    xlab("Months") +
-    theme(plot.title = element_text(size = 11, hjust=0.5),
-          axis.title.x=element_text(size = 9),
+    labs(title = paste0(variable_names[j], " to ", variable_names[k], " Shock")) + 
+    ylab("") +
+    xlab("") +
+    theme(plot.title = element_text(size = 8),
+          axis.title.x=element_text(size = 8),
           axis.title.y=element_blank(),
           panel.grid.minor.y = element_blank(),
           panel.grid.major.x = element_blank(),
@@ -78,80 +93,96 @@ plot_irf <- function(imp,
 
 
 
-## Define function to estimate and plot two-variable VAR system ----------------
 
-estimate_two_variable_var <- function(var_data,
-                                      var1,
-                                      var2){
+
+estimate_var <- function(var_data = var_data, # var data input in data frame format - can contain all variables (default var_data)
+                         
+                         variable_list_in_order, # vector of variable names to be included in the VAR in order
+                         
+                         variable_names_in_order # list of variable names to be displayed on plots
+                         
+                         ) {
   
-  # extract only relevant columns and rename colnames
-  var_data_xts <- xts(var_data[,c(var1, var2)],
+  
+  # extract only relevant columns from VAR data based on variable list and rename columns
+  var_data_xts <- xts(var_data[,c(variable_list_in_order)],
                       order.by = as.Date(var_data[,c("period")]))
-  colnames(var_data_xts) <- c("var1", "var2")
   
-  # estimate model with 12 lags
-  two_variable_var <- VAR(var_data_xts, 
-                          p = 12,
-                          type = "const",
-                          season = NULL,
-                          exog = NULL)
   
-  # print summary
-  summary(two_variable_var)
+  # estimate VAR model 
+  var_model <- VAR(var_data_xts, 
+                   p = 12,
+                   type = "const",
+                   season = NULL,
+                   exog = NULL)
+  
+  
+  # print out summary of model
+  summary(var_model)
   
   
   # plot roots of VAR model (should be less than 1)
   par(mfrow = c(1,1))
-  plot(roots(two_variable_var, modulus = T), xlab = "Eigenvalues", ylab = "")
+  plot(roots(var_model, modulus = T), xlab = "Eigenvalues", ylab = "")
   
   
-  # estimate IRF of impulses of variable 1
-  # var1 on itself
-  irf_var1_var1 <- vars::irf(two_variable_var, impulse = "var1",
-                             response=cbind("var1"), 
-                             n.ahead = 60,
-                             ortho = FALSE, cumulative = FALSE, boot = TRUE, ci = 0.68, runs = 500)
-  # var1 on var2
-  irf_var1_var2 <- vars::irf(two_variable_var, impulse = "var1",
-                             response=cbind("var2"), 
-                             n.ahead = 60,
-                             ortho = FALSE, cumulative = FALSE, boot = TRUE, ci = 0.68, runs = 500)
-  
-  # estimate IRF of impulses of variable 2
-  # var2 on var1
-  irf_var2_var1 <- vars::irf(two_variable_var, impulse = "var2",
-                             response=cbind("var1"), 
-                             n.ahead = 60,
-                             ortho = FALSE, cumulative = FALSE, boot = TRUE, ci = 0.68, runs = 500)
-  # var2 on itself
-  irf_var2_var2 <- vars::irf(two_variable_var, impulse = "var2",
-                             response=cbind("var2"), 
-                             n.ahead = 60,
-                             ortho = FALSE, cumulative = FALSE, boot = TRUE, ci = 0.68, runs = 500)
-  
-  # plot IRFs
-  p1 <- plot_irf(imp = irf_var1_var1, 
-                 title = paste0(var1, " to ", var1, " Shock")) +
-    theme(axis.title.x=element_blank())
-  
-  p2 <- plot_irf(imp = irf_var1_var2, 
-                 title = paste0(var1, " to ", var2, " Shock")) +
-    theme(axis.title.x=element_blank())
-  
-  p3 <- plot_irf(imp = irf_var2_var1, 
-                 title = paste0(var2, " to ", var1, " Shock"))
-  
-  p4 <- plot_irf(imp = irf_var2_var2, 
-                 title = paste0(var2, " to ", var2, " Shock"))
+  # estimate impulse response functions of VAR model
+  imp <- vars::irf(var_model,
+                   n.ahead = 60,
+                   ortho = FALSE, cumulative = FALSE, boot = TRUE, ci = 0.68, runs = 500)
   
   
-  # plot all IRFs in grid
-  grid.arrange(p1, p2, p3, p4, ncol = 2,
-               top = text_grob("Impulse Response Functions", size = 11, face = "bold"),
-               bottom = text_grob("Grey area indicates 68% confidence interval", 
-                                  size = 10, face = "italic"))
+  
+  ## plot IRFs of VAR all in one page by running loop
+  # extract variable names in character vector
+  var_names <- imp$response
+  
+  
+  # extract number of variables in VAR from character vector
+  n_vars <- length(var_names)
+  
+  
+  # total number of plots needed to create is equal to the number of variables squared
+  n_plots <- n_vars^2
+  
+  
+  # create a sequence of impulse variables - each variable is an impulse for the total amount of variables
+  impulse_sequence <- rep(1:n_vars, each = n_vars)
+  
+  
+  # create a sequence of response variables
+  response_sequence <- rep(seq(1,n_vars,1),n_vars)
+  
+  
+  plot_list <- list()
+  
+  # run loop to assign a plot to each impulse and each response
+  for (i in c(1:n_plots)) {
+    
+    # define the impulse variable for the shock based on position in sequence
+    j <- impulse_sequence[i]
+    
+    # define the response variable for the shock based on position in sequence
+    k <- response_sequence[i]
+    
+    # plot variables using pre-defined function
+    plot_list[[i]] <- plot_irfs(imp = imp, j = j, k = k,
+                                variable_names = variable_names_in_order)
+    
+    
+        
+  }
+  
+  ggarrange(plotlist = plot_list,
+            nrow = n_vars,
+            ncol = n_vars)
   
 }
+
+
+
+
+
 
 
 
