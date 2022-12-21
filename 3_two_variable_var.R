@@ -32,7 +32,9 @@ pacman::p_load(dplyr,
                tsbox,
                rdbnomics,
                stringr,
-               fredr)
+               fredr,
+               ggpubr,
+               purrr)
 
 
 # clear environment
