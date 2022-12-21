@@ -65,15 +65,18 @@ var_data <- data %>%
 
 
 # estimate two-variable system with select variables
-estimate_two_variable_var(var_data = var_data,
-                          var1 = "real_eer_y_y",
-                          var2 = "gs_exp_cvm_y_y")
+estimate_var(var_data = var_data,
+             
+             variable_list_in_order = c("real_eer_y_y",
+                                        "gs_exp_cvm_y_y"),
+             
+             variable_names_in_order = c("Exchange rate",
+                                         "Real exports"))
 
 
 
 
-# simplify code by creating a functions script
-# separate out into data collection, data exploration and then the three different var systems (2, 3, 5)
+# play around with the different forms of the two-variable VAR systems
 
 
 
