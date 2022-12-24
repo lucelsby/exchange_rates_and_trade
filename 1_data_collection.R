@@ -338,6 +338,11 @@ data <- data %>%
                 g_imp_def = (g_imp/g_imp_cvm)*100,
                 g_exp_def = (g_exp/g_exp_cvm)*100) %>%
   
+  # take the log of all variables
+  mutate(across(where(is.numeric), 
+                funs(chg = log(.)), 
+                .names = "{col}_ln")) %>%
+  
   # calculate year on year growth rates for all numeric variables
   mutate(across(where(is.numeric), 
                 funs(chg = ((.-lag(., n = 12))/lag(., n = 12))*100), 
@@ -348,8 +353,11 @@ data <- data %>%
                 funs(chg = ((.-lag(.))/lag(.))*100), 
                 .names = "{col}_m_m")) %>%
   
-  # remove all the columns where both the year and the monthly growth rates were calculated
+  # remove all the columns where all 3 are calculated
+  dplyr::select(-contains("_ln_y_y")) %>%
+  dplyr::select(-contains("_ln_m_m")) %>%
   dplyr::select(-contains("_y_y_m_m"))
+  
   
 
 
