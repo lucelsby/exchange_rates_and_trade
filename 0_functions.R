@@ -3,6 +3,34 @@
 
 # [Description of what this script does]
 
+# load pacman for package management
+library(pacman)
+
+
+# install and load relevant packages
+pacman::p_load(dplyr,
+               tidyverse,
+               janitor,
+               readxl,
+               lubridate,
+               data.table,
+               gridExtra,
+               ggplot2,
+               ggpubr,
+               xts,
+               tseries,
+               fpp,
+               vars,
+               mFilter,
+               TSstudio,
+               forecast,
+               tsbox,
+               rdbnomics,
+               stringr,
+               fredr,
+               ggpubr,
+               purrr,
+               RColorBrewer)
 
 
 ## Define function to plot time series -----------------------------------------
@@ -89,6 +117,8 @@ plot_irfs <- function(imp, # estimated impulse response function of VAR
           panel.grid.major.x = element_blank(),
           panel.grid.minor.x = element_blank())
   
+  
+  
 }
 
 
@@ -99,7 +129,9 @@ estimate_var <- function(var_data = var_data, # var data input in data frame for
                          
                          variable_list_in_order, # vector of variable names to be included in the VAR in order
                          
-                         variable_names_in_order # list of variable names to be displayed on plots
+                         variable_names_in_order, # list of variable names to be displayed on plots
+                         
+                         study_variable # variable of interest for FEVD
                          
                          ) {
   
@@ -115,15 +147,6 @@ estimate_var <- function(var_data = var_data, # var data input in data frame for
                    type = "const",
                    season = NULL,
                    exog = NULL)
-  
-  
-  # print out summary of model
-  summary(var_model)
-  
-  
-  # plot roots of VAR model (should be less than 1)
-  par(mfrow = c(1,1))
-  plot(roots(var_model, modulus = T), xlab = "Eigenvalues", ylab = "")
   
   
   # estimate impulse response functions of VAR model
@@ -173,9 +196,55 @@ estimate_var <- function(var_data = var_data, # var data input in data frame for
         
   }
   
-  ggarrange(plotlist = plot_list,
+  irf_plot <- ggarrange(plotlist = plot_list,
             nrow = n_vars,
             ncol = n_vars)
+  
+  ## FEVD
+  
+  # calculate FEVD of VAR model and extract the FEVD of the study variable of interest
+  fevd <- as.data.frame(fevd(var_model, n.ahead = 60)[[match(study_variable, variable_list_in_order)]])
+  
+  
+  # plot stacked area chart
+  # change column names based on variable names
+  colnames(fevd) <- variable_names_in_order
+  
+  # add month horizon based on row number 
+  fevd <- fevd %>%
+    dplyr::mutate(month = row_number(), .before = 1)
+  
+  # convert to long data frame and add 'shock' after each variable name
+  fevd <- fevd %>%
+    pivot_longer(., cols = c(2:ncol(.)), 
+                 names_to = "shock", values_to = "fevd") %>%
+    dplyr::mutate(shock = paste0(shock, " shock")) %>%
+    dplyr::mutate(fevd = fevd*100)
+  
+  # plot
+  fevd_plot <- ggplot(fevd, aes(x = month, y = fevd, fill = shock)) + 
+    geom_area(position = 'stack') +
+    theme_light() +
+    scale_fill_brewer(palette = "Blues") +
+    labs(title = paste0("Forecast error variance decomposition for ", 
+                        variable_names_in_order[match(study_variable, 
+                                                      variable_list_in_order)]),
+         subtitle = paste0("Proportion of variability in ",
+                           variable_names_in_order[match(study_variable, 
+                                                         variable_list_in_order)],
+                           " explained by shocks to given variables"))+
+    ylab("Proportion (%)") +
+    xlab("Month horizon") +
+    theme(plot.title = element_text(size = 11,face = "bold"),
+          plot.subtitle = element_text(size = 9),
+          legend.title = element_text(size = 9,face = "bold"),
+          panel.grid.minor.y = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank()) + 
+    guides(fill=guide_legend(title="Shock Variable"))
+  
+  return(list(irf_plot, fevd_plot))
   
 }
 

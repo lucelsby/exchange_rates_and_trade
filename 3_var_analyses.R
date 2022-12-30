@@ -53,7 +53,7 @@ data <- read.csv("clean_data/data.csv")
 
 # cut the raw data into a consistent set of dates we want to use to estimate the model
 var_data <- data %>%
-  dplyr::filter(period >= "1998-01-01" & period <= "2019-12-01")
+  dplyr::filter(period >= "1998-01-01" & period <= "2022-07-01")
 
 
 
@@ -131,11 +131,11 @@ estimate_var(var_data = var_data,
 
 
 
-estimate_var(var_data = var_data,
+output <- estimate_var(var_data = var_data,
              
              variable_list_in_order = c("oil_prod_y_y",
                                         "ind_prod_y_y",
-                                        "oil_price_real_ln",
+                                        "oil_price_real_y_y",
                                         "real_eer_ln",
                                         "gs_exp_cvm_ln"),
              
@@ -143,10 +143,12 @@ estimate_var(var_data = var_data,
                                          "Real global demand",
                                          "Oil price",
                                          "Exchange rate",
-                                         "Real exports"))
+                                         "Real exports"),
+             
+             study_variable = "gs_exp_cvm_ln")
 
 
 
-
+output[[2]]
 
 
