@@ -263,7 +263,71 @@ companionmatrix <- function (x)
   return(companion)
 }
 
+variable_list_in_order <- c("oil_prod_y_y",
+                           "ind_prod_y_y",
+                           "oil_price_real_y_y",
+                           "real_eer_ln",
+                           "gs_exp_cvm_ln")
 
+variable_names_in_order <-  c("Oil production",
+                            "Real global demand",
+                            "Oil price",
+                            "Exchange rate",
+                            "Real exports")
+
+study_variable <-  "gs_exp_cvm_ln"
+
+
+var_data_xts <- xts(var_data[,c(variable_list_in_order)],
+                    order.by = as.Date(var_data[,c("period")]))
+
+var_model <- VAR(var_data_xts, 
+                 p = 12,
+                 type = "const",
+                 season = NULL,
+                 exog = NULL)
+
+
+# use pre-defined function to estimate historical decomposition 
 HD <- VARhd(Estimation=var_model)
-barp <- as.data.frame(HD[,,1])
+
+# collect historical decomposition for study variable of interest in a dataframe
+HD_study_variable <- as.data.frame(HD[,,match(study_variable, variable_list_in_order)])
+
+# combine with date variable
+HD_study_variable <- cbind(as.data.frame(time(var_data_xts)),
+                           HD_study_variable)
+
+# change column names to the defined variables names
+colnames(HD_study_variable) <- c("month", variable_names_in_order)
+
+# convert to long dataframe
+HD_study_variable <- HD_study_variable %>%
+  pivot_longer(., cols = c(2:ncol(.)),
+               names_to = "shock", values_to = "HD") %>%
+  dplyr::mutate(HD = HD*100)
+
+
+# plot
+HD_full_sample_plot <- ggplot(HD_study_variable, aes(x=month, y=HD, fill=shock)) +
+  geom_area() +
+  theme_light() +
+  scale_fill_manual(values = colour_palet) +
+  labs(title = paste0("Historical decomposition of ", 
+                      variable_names_in_order[match(study_variable, 
+                                                    variable_list_in_order)]),
+       subtitle = paste0("Contribution of each structural shock to the cumulative change in ",
+                         variable_names_in_order[match(study_variable, 
+                                                       variable_list_in_order)]))+
+  ylab("%") +
+  xlab("") +
+  theme(plot.title = element_text(size = 11,face = "bold"),
+        plot.subtitle = element_text(size = 9),
+        legend.title = element_text(size = 9,face = "bold"),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank()) + 
+  guides(fill=guide_legend(title="Structural shock"))
+
 
