@@ -22,7 +22,128 @@ data <- read.csv("clean_data/data.csv")
 
 # cut the raw data into a consistent set of dates we want to use to estimate the model
 var_data <- data %>%
-  dplyr::filter(period >= "1998-01-01" & period <= "2022-07-01")
+  dplyr::filter(period >= "1998-01-01" & period <= "2019-12-01")
+
+
+
+# simple two variable VAR
+# in growth rates
+two_growth <- estimate_var(var_data = var_data,
+                           variable_list_in_order = c("real_eer_y_y",
+                                                      "gs_exp_cvm_y_y"),
+                           variable_names_in_order = c("Real exchange rate growth",
+                                                       "Real export growth"),
+                           study_variable = "gs_exp_cvm_y_y")
+
+two_growth[[1]]
+two_growth[[2]]
+two_growth[[3]]
+
+# in levels
+two_level <- estimate_var(var_data = var_data,
+                           variable_list_in_order = c("real_eer_ln",
+                                                      "gs_exp_cvm_ln"),
+                           variable_names_in_order = c("Real exchange rate",
+                                                       "Real export"),
+                           study_variable = "gs_exp_cvm_ln")
+
+two_level[[1]]
+two_level[[2]]
+two_level[[3]]
+
+
+
+# five variable VAR
+# in growth rates
+five_growth <- estimate_var(var_data = var_data,
+                           variable_list_in_order = c("oil_prod_y_y",
+                                                      "ind_prod_y_y",
+                                                      "oil_price_real_y_y",
+                                                      "real_eer_y_y",
+                                                      "gs_exp_cvm_y_y"),
+                           
+                           variable_names_in_order = c("Oil production growth",
+                                                       "Real global demand growth",
+                                                       "Oil price growth",
+                                                       "Exchange rate growth",
+                                                       "Real export growth"),
+                           
+                           study_variable = "gs_exp_cvm_y_y")
+
+five_growth[[1]]
+five_growth[[2]]
+five_growth[[3]]
+
+# in levels
+five_level <- estimate_var(var_data = var_data,
+                          variable_list_in_order = c("oil_prod_y_y",
+                                                     "ind_prod_y_y",
+                                                     "oil_price_real_y_y",
+                                                     "real_eer_ln",
+                                                     "gs_exp_cvm_ln"),
+                          
+                          variable_names_in_order = c("Oil production",
+                                                      "Real global demand",
+                                                      "Oil price",
+                                                      "Exchange rate",
+                                                      "Real exports"),
+                          
+                          study_variable = "gs_exp_cvm_ln")
+
+five_level[[1]]
+five_level[[2]]
+five_level[[3]]
+
+
+
+
+output <- estimate_var(var_data = var_data,
+                       
+                       variable_list_in_order = c("oil_prod_y_y",
+                                                  "ind_prod_y_y",
+                                                  "oil_price_real_y_y",
+                                                  "real_eer_ln",
+                                                  "gs_exp_cvm_ln"),
+                       
+                       variable_names_in_order = c("Oil production",
+                                                   "Real global demand",
+                                                   "Oil price",
+                                                   "Exchange rate",
+                                                   "Real exports"),
+                       
+                       study_variable = "gs_exp_cvm_ln")
+
+
+output[[1]]
+output[[2]]
+output[[3]]
+
+
+
+
+plot_series(data = data,
+            variable = "gs_exp_cvm_y_y",
+            start_date = start_date,
+            end_date = end_date,
+            fig_title = "Real exports")
+
+
+
+
+
+
+
+plot(var_data$gs_exp_cvm_y_y)
+
+
+
+plot.xts()
+
+
+
+
+
+
 
 
 
@@ -99,26 +220,11 @@ var_data <- data %>%
 
 
 
+## Next steps
 
-output <- estimate_var(var_data = var_data,
-             
-             variable_list_in_order = c("oil_prod_y_y",
-                                        "ind_prod_y_y",
-                                        "oil_price_real_y_y",
-                                        "real_eer_ln",
-                                        "gs_exp_cvm_ln"),
-             
-             variable_names_in_order = c("Oil production",
-                                         "Real global demand",
-                                         "Oil price",
-                                         "Exchange rate",
-                                         "Real exports"),
-             
-             study_variable = "gs_exp_cvm_ln")
-
-
-output[[1]]
-output[[2]]
-output[[3]]
+# add functionality to take the sitc sectors of the defined export/import series
+# and calculate the forecast error variance decomposition of each sector
+# then display in a heatmap the relative importance 
+# could also calculate cumulative contribution of shocks of past 10 years/20 years/5 years and put into a heatmap
 
 

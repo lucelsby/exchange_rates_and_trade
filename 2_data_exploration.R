@@ -7,34 +7,6 @@
 
 ## Setup Environment -----------------------------------------------------------
 
-
-# load pacman for package management
-library(pacman)
-
-
-# install and load relevant packages
-pacman::p_load(dplyr,
-               tidyverse,
-               janitor,
-               readxl,
-               lubridate,
-               data.table,
-               gridExtra,
-               ggplot2,
-               ggpubr,
-               xts,
-               tseries,
-               fpp,
-               vars,
-               mFilter,
-               TSstudio,
-               forecast,
-               tsbox,
-               rdbnomics,
-               stringr,
-               fredr)
-
-
 # clear environment
 rm(list = ls())
 graphics.off()
