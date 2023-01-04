@@ -382,16 +382,23 @@ estimate_var <- function(var_data = var_data, # var data input in data frame for
   # change column names to the defined variables names
   colnames(HD_study_variable) <- c("month", variable_names_in_order)
   
+  # calculate net value
+  net_df <- HD_study_variable %>%
+    rowwise %>% 
+    mutate(net = sum(c_across(where(is.numeric)))) %>%
+    dplyr::select(month, net)
+  
   # convert to long dataframe
   HD_study_variable <- HD_study_variable %>%
     pivot_longer(., cols = c(2:ncol(.)),
                  names_to = "shock", values_to = "HD") %>%
-    dplyr::mutate(HD = HD*100)
+    dplyr::mutate(HD = HD) 
   
   
   # plot
-  HD_full_sample_plot <- ggplot(HD_study_variable, aes(x=month, y=HD, fill=shock)) +
-    geom_area() +
+  HD_full_sample_plot <- ggplot(data = HD_study_variable) +
+    geom_area(aes(x=month, y=HD, fill=shock)) +
+    geom_line(data = net_df, mapping = aes(x=month, y=net)) +
     theme_light() +
     scale_fill_manual(values = colour_palet) +
     labs(title = paste0("Historical decomposition of ", 
