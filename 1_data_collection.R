@@ -322,6 +322,11 @@ data <- Reduce(function(...) merge(..., by="period", all=TRUE), mylist) %>%
 
 
 
+
+
+
+
+
 ## Data cleaning ---------------------------------------------------------------
 
 data <- data %>%

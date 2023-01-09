@@ -97,48 +97,6 @@ five_level[[3]]
 
 
 
-output <- estimate_var(var_data = var_data,
-                       
-                       variable_list_in_order = c("oil_prod_y_y",
-                                                  "ind_prod_y_y",
-                                                  "oil_price_real_y_y",
-                                                  "real_eer_ln",
-                                                  "gs_exp_cvm_ln"),
-                       
-                       variable_names_in_order = c("Oil production",
-                                                   "Real global demand",
-                                                   "Oil price",
-                                                   "Exchange rate",
-                                                   "Real exports"),
-                       
-                       study_variable = "gs_exp_cvm_ln")
-
-
-output[[1]]
-output[[2]]
-output[[3]]
-
-
-
-
-plot_series(data = data,
-            variable = "gs_exp_cvm_y_y",
-            start_date = start_date,
-            end_date = end_date,
-            fig_title = "Real exports")
-
-
-
-
-
-
-
-plot(var_data$gs_exp_cvm_y_y)
-
-
-
-plot.xts()
-
 
 
 
