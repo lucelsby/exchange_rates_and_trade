@@ -30,7 +30,8 @@ pacman::p_load(dplyr,
                fredr,
                ggpubr,
                purrr,
-               RColorBrewer)
+               RColorBrewer,
+               viridis)
 
 ## Define colour palet for consistency
 colour_palet <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
