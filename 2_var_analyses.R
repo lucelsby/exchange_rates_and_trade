@@ -26,6 +26,14 @@ var_data <- data %>%
 
 
 
+# read in sitc names
+sitc_names <- readxl::read_excel("input_data/sitc_names.xlsx",col_names = FALSE)
+colnames(sitc_names) <- c("name")
+sitc_names <- sitc_names %>%
+  dplyr::mutate(variable = substr(name, 1, 6))
+
+
+
 # simple two variable VAR
 # in growth rates
 two_growth <- estimate_var(var_data = var_data,
@@ -35,9 +43,7 @@ two_growth <- estimate_var(var_data = var_data,
                                                        "Real export growth"),
                            study_variable = "gs_exp_cvm_y_y")
 
-two_growth[[1]]
-two_growth[[2]]
-two_growth[[3]]
+two_growth
 
 # in levels
 two_level <- estimate_var(var_data = var_data,
@@ -47,9 +53,7 @@ two_level <- estimate_var(var_data = var_data,
                                                        "Real export"),
                            study_variable = "gs_exp_cvm_ln")
 
-two_level[[1]]
-two_level[[2]]
-two_level[[3]]
+two_level
 
 
 
@@ -70,9 +74,7 @@ five_growth <- estimate_var(var_data = var_data,
                            
                            study_variable = "gs_exp_cvm_y_y")
 
-five_growth[[1]]
-five_growth[[2]]
-five_growth[[3]]
+five_growth
 
 # in levels
 five_level <- estimate_var(var_data = var_data,
@@ -90,9 +92,7 @@ five_level <- estimate_var(var_data = var_data,
                           
                           study_variable = "gs_exp_cvm_ln")
 
-five_level[[1]]
-five_level[[2]]
-five_level[[3]]
+five_level
 
 
 
@@ -104,6 +104,33 @@ five_level[[3]]
 
 
 
+
+# estimate sector IRFs
+sector_irfs <- estimate_sector_irfs(var_data = var_data,
+                             variable_extension = "_ln",
+                             exchange_rate_variable = "real_eer_ln",
+                             other_variables_list = c("oil_prod_y_y",
+                                                      "ind_prod_y_y",
+                                                      "oil_price_real_y_y",
+                                                      "real_eer_ln"))
+sector_irfs
+
+
+# estimate historical and FEVDs
+sector_decomps <- estimate_sector_decomps(variable_extension = "_y_y",
+                                  exchange_rate_variable = "real_eer_y_y",
+                                  other_variables_list = c("oil_prod_y_y",
+                                                           "ind_prod_y_y",
+                                                           "oil_price_real_y_y",
+                                                           "real_eer_y_y"),
+                                  other_variable_names= c("Oil production",
+                                                          "Real global demand",
+                                                          "Oil price",
+                                                          "Exchange rate"),
+                                  HD_date = "2016-06-01",
+                                  fevd_horizon = 1000)
+
+sector_decomps
 
 
 
