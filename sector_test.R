@@ -66,3 +66,40 @@ output <- estimate_sector_decomps(variable_extension = "_y_y",
 
 
 
+# inputs
+var_data = var_data
+variable_extension = "_ln"
+exchange_rate_variable = "real_eer_ln"
+other_variables_list = c("oil_prod_y_y",
+                         "ind_prod_y_y",
+                         "oil_price_real_y_y",
+                         "real_eer_ln")
+
+
+
+
+
+barp <- estimate_total_irfs(var_data = var_data,
+                    variable_extension = "_ln",
+                    exchange_rate_variable = "real_eer_ln",
+                    other_variables_list = c("oil_prod_y_y",
+                                             "ind_prod_y_y",
+                                             "oil_price_real_y_y",
+                                             "real_eer_ln"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

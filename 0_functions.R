@@ -959,6 +959,107 @@ estimate_sector_decomps <- function(variable_extension,
 }
 
 
+# function to estimate and plot IRFs at aggregate level
+estimate_total_irfs <- function(var_data,
+                                variable_extension,
+                                exchange_rate_variable,
+                                other_variables_list){
+  
+  
+  
+  # create a dataframe to hold impulse respnses from exchange rate variable
+  impulse_responses <- NULL
+  
+  
+  # Use the grep function with a regular expression to find the import and export CVMs with the selected variable extension
+  variables <- grep(paste0("g_.*cvm.*", variable_extension,"*"), 
+                    names(var_data), ignore.case = TRUE, value = TRUE)
+  
+  
+  # run loop to estimate a var model and collect IRFs for each sector
+  for (i in c(1:length(variables))){
+    
+    variable <- variables[i]
+    
+    # extract only relevant columns from VAR data based on variable list and rename columns
+    var_data_xts <- xts(var_data[,c(other_variables_list, variable)],
+                        order.by = as.Date(var_data[,c("period")]))
+    
+    
+    # estimate VAR model 
+    var_model <- VAR(var_data_xts, 
+                     p = 12,
+                     type = "const",
+                     season = NULL,
+                     exog = NULL)
+    
+    
+    # estimate impulse response functions of VAR model
+    imp <- vars::irf(var_model, impulse = exchange_rate_variable, response = variable,
+                     n.ahead = 60, ortho = FALSE, cumulative = FALSE, boot = TRUE, ci = 0.68, runs = 500)
+    
+    
+    # collect central, upper and lower response of study variable to change in the exchange rate variable
+    central <- unlist(imp[["irf"]], use.names = FALSE)
+    lower <- unlist(imp[["Lower"]], use.names = FALSE)
+    upper <- unlist(imp[["Upper"]], use.names = FALSE)
+    
+    
+    # collect period as a numeric variable
+    period <- as.numeric(0:(length(central)-1))
+    
+    
+    # combine into data frame
+    imp_df <- as.data.frame(cbind(period, central, lower, upper))
+    colnames(imp_df) <- c("period", "central", "upper", "lower")
+    
+    # create a column indicating significance where both upper and lower bounds are different from zero
+    imp_df <- imp_df %>%
+      
+      dplyr::mutate(significant = ifelse((central > 0 & upper > 0 & lower > 0) | (central < 0 & upper < 0 & lower < 0) , 
+                                         TRUE, FALSE)) %>%
+      
+      dplyr::mutate(variable = variable, .before = 1)
+    
+    
+    impulse_responses <- rbind(impulse_responses, imp_df)
+    
+    
+  }
+  
+  
+  # collect chart data based on sitc code selected
+  chart_data <- impulse_responses %>%
+    
+    # create new column based on trade flow
+    dplyr::mutate(trade_flow = ifelse(substr(variable, 3, 5) == "exp", "Exports", "Imports")) %>%
+    
+    dplyr::select(trade_flow, period, central, upper, lower)
+  
+  
+  # plot
+  irf_plot <- ggplot(chart_data) +
+    geom_ribbon(aes(x=period, ymin=lower, ymax=upper, fill = trade_flow), alpha=0.5) +
+    geom_line(aes(x=period, y=central, color = trade_flow)) +
+    labs(title = "Impuls Respons Function of UK Trade to an Exchage Rate Shock") +
+    scale_color_manual(values = c(Exports = "red", Imports = "blue")) + 
+    scale_fill_manual(values = c(Exports = "pink", Imports = "lightblue")) +
+    geom_hline(yintercept = 0, color="black") +
+    theme_minimal() +
+    ylab("Percent") +
+    xlab("Month Horizon") +
+    theme(plot.title = element_text(size = 11, face = "bold"),
+          axis.title.x=element_text(size = 10),
+          axis.title.y=element_text(size = 10),
+          panel.grid.minor.y = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          legend.title = element_blank())
+  
+  return(irf_plot)
+  
+  
+}
 
 
 

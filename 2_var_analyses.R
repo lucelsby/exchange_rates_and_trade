@@ -96,11 +96,17 @@ five_level
 
 
 
+# estimate IRFs for goods imports and exports
+total_irfs <- estimate_total_irfs(var_data = var_data,
+                            variable_extension = "_ln",
+                            exchange_rate_variable = "real_eer_ln",
+                            other_variables_list = c("oil_prod_y_y",
+                                                     "ind_prod_y_y",
+                                                     "oil_price_real_y_y",
+                                                     "real_eer_ln"))
 
 
-
-
-
+total_irfs
 
 
 
